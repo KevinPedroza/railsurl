@@ -16,10 +16,25 @@ class ShortUrl < ApplicationRecord
   def update_title!
   end
 
+  def validate_full_url
+    url = URI.parse(self.url)
+
+    if(!url.scheme)
+      self.url = "http://#{self.url}"
+    end
+  end
+
   private
 
-    def validate_full_url
+    def self.increase_access_url(minified_url)
+      url = where(minified_url: minified_url)
 
+      if (url.any?)
+        url = url.first
+        url.access += 1
+        url.save!
+        url
+      end
     end
 
 end
