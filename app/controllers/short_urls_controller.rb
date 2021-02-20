@@ -8,8 +8,8 @@ class ShortUrlsController < ApplicationController
     render json: ShortUrl.top_short_url(100), status: 200
   end
 
-  # Return an specific shor url
-  def find_shor_url
+  # Return an specific short url
+  def find_short_url
     url = ShortUrl.find_url(params[:id])
     render json: {short_url: url}, status: 200
   end
@@ -22,7 +22,13 @@ class ShortUrlsController < ApplicationController
 
   # Creating the short URL
   def create
+    @url = ShortUrl.short_url(params[:full_url])
 
+    if @url.save
+      render json: @url, status: 201
+    else
+      render json: @url.errors, status: :unprocessable_entity
+    end
   end
 
 end
