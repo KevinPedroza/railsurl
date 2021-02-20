@@ -10,13 +10,13 @@ class ShortUrlsController < ApplicationController
 
   # Return an specific shor url
   def find_shor_url
-    url = Url.lookup(params[:id])
+    url = ShortUrl.find_url(params[:id])
     render json: {short_url: url}, status: 200
   end
 
   # Redirecting to the specified url
   def redirect_url
-    url = ShortUrl.lookup(params[:id])
+    url = ShortUrl.find_url(params[:id])
     redirect_to url
   end
 
