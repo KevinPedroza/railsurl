@@ -13,9 +13,7 @@ class ShortUrl < ApplicationRecord
 
   end
 
-  def update_title!
-  end
-
+  # We validate the URL
   def validate_full_url
     url = URI.parse(self.url)
 
@@ -24,17 +22,20 @@ class ShortUrl < ApplicationRecord
     end
   end
 
-  private
+  # We search for the URL
+  def self.find_url(url)
+  end
 
-    def self.increase_access_url(minified_url)
-      url = where(minified_url: minified_url)
+  # We increase the access of the URL
+  def self.increase_access_url(minified_url)
+    url = where(minified_url: minified_url)
 
-      if (url.any?)
-        url = url.first
-        url.access += 1
-        url.save!
-        url
-      end
+    if (url.any?)
+      url = url.first
+      url.access += 1
+      url.save!
+      url
     end
+  end
 
 end
