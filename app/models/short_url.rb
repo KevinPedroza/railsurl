@@ -28,7 +28,6 @@ class ShortUrl < ApplicationRecord
 
     if(!url.scheme)
       self.errors.add(:full_url, "Invalid URL")
-      false
     end
   end
 
