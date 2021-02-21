@@ -1,17 +1,24 @@
 class ShortUrl < ApplicationRecord
 
-  validate_presence_of: :full_url
+  # We validate the unique full url and the presence
+  validates_presence_of :full_url, on: :create
+  validates_uniqueness_of :full_url, case_sensitive: true
 
   # The scope to get the top of the short url
   scope :top_short_url, -> (top_limit) { order('click_count desc').limit(top_limit) }
 
   before_validation :validate_full_url, on: :create
 
-  def short_url(full_url)
+  # We create the URL and minified
+  def self.short_url(full_url)
     url = ShortUrl.create(full_url: full_url)
-    url.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/s/#{MinifyUrlService.instance.url_encode(url.id)}"
-    url.click_count = u.click_count + 1
-    url.save!
+
+    if url.valid?
+      url.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/s/#{MinifyUrlService.instance.url_encode(url.id)}"
+      url.click_count = url.click_count + 1
+      url.save
+    end
+
     url
   end
 
@@ -20,8 +27,14 @@ class ShortUrl < ApplicationRecord
     url = URI.parse(self.full_url)
 
     if(!url.scheme)
-      self.url = "http://#{self.full_url}"
+      self.errors.add(:full_url, "Invalid URL")
+      false
     end
+  end
+
+  # We decode the short code from the URL
+  def self.decode_url(minified_url)
+    MinifyUrlService.instance.url_decode(minified_url.split('/').last)
   end
 
   # We search for the URL
@@ -35,7 +48,7 @@ class ShortUrl < ApplicationRecord
     if (url.any?)
       url = url.first
       url.click_count += 1
-      url.save!
+      url.save
       url
     end
   end
