@@ -16,6 +16,7 @@ class ShortUrl < ApplicationRecord
     if @url.valid?
       # We call the background job to update the title
       update_title(@url.id)
+      
       @url.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/s/#{MinifyUrlService.instance.url_encode(@url.id)}"
       @url.save
     end
