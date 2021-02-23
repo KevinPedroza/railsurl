@@ -7,6 +7,5 @@ Rails.application.routes.draw do
   resources :short_urls, only: [:create]
 
   get 's/:id', to: 'short_urls#redirect_url'
-  get '/', to: 'short_urls#top_url'
-  post 'find_short_url', to: 'short_urls#find_short_url'
+  get '/', to: 'short_urls#index'
 end
