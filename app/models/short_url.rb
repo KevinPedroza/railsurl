@@ -1,7 +1,7 @@
 class ShortUrl < ApplicationRecord
 
   # We validate the unique full url and the presence
-  validates_presence_of :full_url, on: :create
+  validates_presence_of :full_url
   validates_uniqueness_of :full_url, case_sensitive: true
 
   # The scope to get the top of the short url
@@ -11,23 +11,26 @@ class ShortUrl < ApplicationRecord
 
   # We create the URL and minified
   def self.short_url(full_url)
-    url = ShortUrl.create(full_url: full_url)
+    @url = ShortUrl.create(full_url: full_url)
 
-    if url.valid?
-      url.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/s/#{MinifyUrlService.instance.url_encode(url.id)}"
-      url.click_count = url.click_count + 1
-      url.save
+    if @url.valid?
+      # We call the background job to update the title
+      update_title(@url.id)
+      @url.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/s/#{MinifyUrlService.instance.url_encode(@url.id)}"
+      @url.save
     end
 
-    url
+    @url
   end
 
   # We validate the URL
   def validate_full_url
-    url = URI.parse(self.full_url)
+    if self.full_url.nil?
+      return
+    end
 
-    if(!url.scheme)
-      self.errors.add(:full_url, "Invalid URL")
+    if((self.full_url =~ URI::regexp("http")) == nil || (self.full_url =~ URI::regexp("http")) == nil)
+      self.errors.add(:full_url, "Full url is not a valid url")
     end
   end
 
@@ -35,21 +38,27 @@ class ShortUrl < ApplicationRecord
   def self.decode_url(minified_url)
     MinifyUrlService.instance.url_decode(minified_url.split('/').last)
   end
+  
+  # We define the method to return the URL as
+  def self.find_url(minified_url)
+    result_url = ''
 
-  # We search for the URL
-  def self.find_url(url)
+    result = ShortUrl.find(decode_url(minified_url))
+    if result.present?
+      url = result
+      result.click_count += 1
+      result.save
+      result_url = result.full_url
+    else
+      false
+    end
+
+    result_url
   end
 
-  # We increase the access of the URL
-  def self.increase_click_count_url(minified_url)
-    url = where(minified_url: minified_url)
-
-    if (url.any?)
-      url = url.first
-      url.click_count += 1
-      url.save
-      url
-    end
+  # We execute the background job
+  def self.update_title(id)
+    UpdateTitleJob.perform_later id
   end
 
 end
