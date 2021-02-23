@@ -3,8 +3,8 @@ require 'singleton'
 class MinifyUrlService
   include Singleton
 
-  CHARACTERS = [*'0'..'9', *'a'..'z', *'A'..'Z'].freeze
-
+  CHARACTERS = (('a'..'z').to_a + ('A'..'Z').to_a + (0..9).to_a).shuffle.join
+  
   def url_encode(i)
     return CHARACTERS[0] if i == 0
 
