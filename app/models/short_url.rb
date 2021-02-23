@@ -1,4 +1,5 @@
 class ShortUrl < ApplicationRecord
+  include ShortUrlsHelper
 
   # We validate the unique full url and the presence
   validates_presence_of :full_url
@@ -8,7 +9,7 @@ class ShortUrl < ApplicationRecord
 
   # We create the URL and minified
   def short_url
-    self.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/#{MinifyUrlService.instance.url_encode(id.to_i)}"
+    self.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/#{ShortUrlsHelper.url_encode(id.to_i)}"
 
     if save
       update_title(self.id)
@@ -37,7 +38,7 @@ class ShortUrl < ApplicationRecord
 
   # We decode the short code from the URL
   def self.decode_url(minified_url)
-    MinifyUrlService.instance.url_decode(minified_url.split("/").last)
+    ShortUrlsHelper.url_decode(minified_url.split("/").last)
   end
   
   # We define the method to return the URL as
