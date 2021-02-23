@@ -5,13 +5,13 @@ class ShortUrlsController < ApplicationController
 
   # We return the top 100
   def index
-    render json: { urls: ShortUrl.top_short_url(100) }, status: 200
+    render json: { status: 200, urls: ShortUrl.top_short_url(100) }
   end
 
   # Redirecting to the specified url
   def redirect_url
     if (url = ShortUrl.find_url(params[:id]))
-      return redirect_to url
+      return redirect_to url.full_url
     end
 
     render json: {
@@ -21,12 +21,12 @@ class ShortUrlsController < ApplicationController
 
   # Creating the short URL
   def create
-    @url = ShortUrl.short_url(params[:full_url])
+    url = ShortUrl.create(full_url: params[:full_url])
 
-    if @url.save
-      render json: { minified_url: @url }, status: 201
+    if url.short_url
+      render json: { status: 201, minified_url: url.minified_url }
     else
-      render json: @url.errors, status: :unprocessable_entity
+      render json: url.errors, status: :unprocessable_entity
     end
   end
 
