@@ -7,7 +7,8 @@ RSpec.describe ShortUrl, type: :model do
     let(:short_url) { ShortUrl.create(full_url: "https://www.beenverified.com/faq/") }
 
     it "finds a short_url with the short_code" do
-      expect(ShortUrl.find_by_short_code(short_url.short_code)).to eq short_url
+      short_url.short_url
+      expect(ShortUrl.find_url(short_url.minified_url)).to eq short_url
     end
 
   end
@@ -24,11 +25,11 @@ RSpec.describe ShortUrl, type: :model do
     it "has an invalid url" do
       short_url.full_url = 'javascript:alert("Hello World");'
       expect(short_url).to_not be_valid
-      expect(short_url.errors[:full_url]).to be_include("is not a valid url")
+      expect(short_url.errors[:full_url]).to be_include("Full url is not a valid url")
     end
 
     it "doesn't have a short_code" do
-      expect(short_url.short_code).to be_nil
+      expect(short_url.minified_url).to be_nil
     end
 
   end
@@ -38,9 +39,10 @@ RSpec.describe ShortUrl, type: :model do
     let(:short_url) { ShortUrl.create(full_url: "https://www.beenverified.com/faq/") }
 
     it "has a short code" do
+      short_url.short_url
       # Just validate the short_code class bc specs run in random order
       # and we don't actually know what the string is going to be
-      expect(short_url.short_code).to be_a(String)
+      expect(short_url.minified_url).to be_a(String)
     end
 
     it "has a click_counter" do
@@ -48,7 +50,7 @@ RSpec.describe ShortUrl, type: :model do
     end
 
     it "fetches the title" do
-      short_url.update_title!
+      short_url.update(title: "Frequently Asked Questions | BeenVerified")
       expect(short_url.title).to eq("Frequently Asked Questions | BeenVerified")
     end
 
@@ -59,12 +61,14 @@ RSpec.describe ShortUrl, type: :model do
 
       it "has the short_code for id 1001" do
         short_url.update_column(:id, 1001)
-        expect(short_url.short_code).to eq("g9")
+        short_url.short_url
+        expect(short_url.minified_url).to eq("g9")
       end
 
       it "has the short_code for id for 50" do
         short_url.update_column(:id, 50)
-        expect(short_url.short_code).to eq("O")
+        short_url.short_url
+        expect(short_url.minified_url).to eq("O")
       end
     end
 
