@@ -19,10 +19,16 @@ class ShortUrl < ApplicationRecord
     false
   end
 
+  # We return the top 100
   def self.top_short_url(limit)
     order(click_count: :desc)
       .limit(limit)
       .as_json(except: %i[created_at updated_at])
+  end
+
+  # Increment the click_count field by one 
+  def increment_click_count
+    update(click_count: click_count + 1)
   end
 
   # We validate the URL
@@ -35,25 +41,11 @@ class ShortUrl < ApplicationRecord
       self.errors.add(:full_url, "Full url is not a valid url")
     end
   end
-
-  # We decode the short code from the URL
-  def self.decode_url(minified_url)
-    ShortUrlsHelper.url_decode(minified_url.split("/").last)
-  end
   
   # We define the method to return the URL as
   def self.find_url(minified_url)
-      result = ShortUrl.find(decode_url(minified_url))
-
-      if result.present?
-        url = result
-        result.click_count += 1
-        result.save
-      else
-        false
-      end
-
-      result
+      id = ShortUrlsHelper.url_decode(minified_url.split("/").last)
+      find(id)
     rescue ActiveRecord::RecordNotFound
       false
   end

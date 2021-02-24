@@ -11,6 +11,7 @@ class ShortUrlsController < ApplicationController
   # Redirecting to the specified url
   def redirect_url
     if (url = ShortUrl.find_url(params[:id]))
+      url.increment_click_count
       return redirect_to url.full_url
     end
 
