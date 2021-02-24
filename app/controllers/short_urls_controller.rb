@@ -22,7 +22,7 @@ class ShortUrlsController < ApplicationController
 
   # Creating the short URL
   def create
-    url = ShortUrl.create(full_url: params[:full_url])
+    url = ShortUrl.create(params_url)
 
     if url.short_url
       render json: { status: 201, minified_url: url.minified_url }
@@ -31,4 +31,8 @@ class ShortUrlsController < ApplicationController
     end
   end
 
+  private
+    def params_url
+      params.permit(:full_url)
+    end
 end
