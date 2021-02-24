@@ -9,7 +9,7 @@ class ShortUrl < ApplicationRecord
 
   # We create the URL and minified
   def short_url
-    self.minified_url = "#{ENV.fetch('URL_PROTOCOL')}://#{ENV.fetch('URL_HOSTNAME')}/#{ShortUrlsHelper.url_encode(id.to_i)}"
+    self.minified_url = ShortUrlsHelper.url_encode(id.to_i)
 
     if save
       update_title(self.id)
@@ -44,7 +44,7 @@ class ShortUrl < ApplicationRecord
   
   # We define the method to return the URL as
   def self.find_url(minified_url)
-      id = ShortUrlsHelper.url_decode(minified_url.split("/").last)
+      id = ShortUrlsHelper.url_decode(minified_url)
       find(id)
     rescue ActiveRecord::RecordNotFound
       false
